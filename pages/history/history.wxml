@@ -1,0 +1,83 @@
+<view class="page">
+  <!-- 头部 -->
+  <view class="his-head">
+    <view class="head-title">拼场历史</view>
+    <view class="head-sub">你发起和参与过的每一场</view>
+  </view>
+
+  <!-- 统计条 -->
+  <view class="stat-band card">
+    <view class="stat">
+      <view class="stat-num">{{stats.total}}</view>
+      <view class="stat-lab">总场次</view>
+    </view>
+    <view class="stat-div"></view>
+    <view class="stat">
+      <view class="stat-num blue">{{stats.active}}</view>
+      <view class="stat-lab">未结束</view>
+    </view>
+    <view class="stat-div"></view>
+    <view class="stat">
+      <view class="stat-num green">{{stats.done}}</view>
+      <view class="stat-lab">已完成</view>
+    </view>
+  </view>
+
+  <!-- 角色筛选 -->
+  <view class="seg-bar card">
+    <view class="seg {{seg === 'all' ? 'on' : ''}}" data-seg="all" bindtap="switchSeg">全部</view>
+    <view class="seg {{seg === 'pub' ? 'on' : ''}}" data-seg="pub" bindtap="switchSeg">我发布的</view>
+    <view class="seg {{seg === 'join' ? 'on' : ''}}" data-seg="join" bindtap="switchSeg">我报名的</view>
+  </view>
+
+  <!-- 状态筛选 -->
+  <view class="chip-row">
+    <view class="chip {{status === 'all' ? 'on' : ''}}" data-status="all" bindtap="switchStatus">全部状态</view>
+    <view class="chip {{status === 'active' ? 'on' : ''}}" data-status="active" bindtap="switchStatus">未结束</view>
+    <view class="chip {{status === 'done' ? 'on' : ''}}" data-status="done" bindtap="switchStatus">已结束</view>
+    <view class="chip {{status === 'canceled' ? 'on' : ''}}" data-status="canceled" bindtap="switchStatus">已取消</view>
+  </view>
+
+  <!-- 加载骨架 -->
+  <block wx:if="{{loading}}">
+    <view class="skeleton-block his-sk" wx:for="{{[1,2,3]}}" wx:key="*this"></view>
+  </block>
+
+  <!-- 列表 -->
+  <block wx:elif="{{filtered.length}}">
+    <view
+      class="his-card card rise-in"
+      wx:for="{{filtered}}"
+      wx:key="_id"
+      style="animation-delay: {{index * 50}}ms"
+      data-id="{{item._id}}"
+      bindtap="openDetail"
+    >
+      <view class="his-top">
+        <view class="his-avatar icon-breathe" style="background: {{item.iconBg}}; box-shadow: 0 8rpx 18rpx {{item.glow}};">{{item.cat.icon}}</view>
+        <view class="his-info">
+          <view class="his-venue ellipsis">{{item.venue}}</view>
+          <view class="his-time">{{item.dateLabel}} · {{item.startTime}}-{{item.endTime}}</view>
+        </view>
+        <view class="his-status {{item.statusClass}}">{{item.statusText}}</view>
+      </view>
+      <view class="his-foot">
+        <view class="role-tag {{item.role === 'pub' ? 'pub' : 'join'}}">{{item.role === 'pub' ? '📣 我发起' : '🙋 我报名'}}</view>
+        <view class="his-prog-track">
+          <view class="his-prog-bar" style="width: {{item.percent}}%"></view>
+        </view>
+        <text class="his-prog-txt">{{item.filled}}/{{item.total}} 人</text>
+        <text class="his-arrow">›</text>
+      </view>
+    </view>
+  </block>
+
+  <!-- 空状态 -->
+  <view wx:else class="empty">
+    <view class="empty-icon">🗂️</view>
+    <view class="empty-title">暂无拼场记录</view>
+    <view class="empty-sub">发起或报名的场次都会出现在这里</view>
+  </view>
+
+  <view class="safe-pad"></view>
+</view>

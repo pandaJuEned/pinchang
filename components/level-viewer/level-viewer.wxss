@@ -1,0 +1,53 @@
+.lvw-mask {
+  position: fixed;
+  left: 0;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(15, 23, 42, 0.92);
+  z-index: 10010;
+  display: flex;
+  flex-direction: column;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.22s ease, visibility 0.22s ease;
+}
+.lvw-mask.show {
+  opacity: 1;
+  visibility: visible;
+}
+.lvw-head {
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: calc(env(safe-area-inset-top) + 20rpx) 32rpx 20rpx;
+}
+.lvw-title {
+  color: #fff;
+  font-size: 32rpx;
+  font-weight: 700;
+}
+.lvw-close {
+  color: rgba(255, 255, 255, 0.88);
+  font-size: 26rpx;
+  background: rgba(255, 255, 255, 0.16);
+  border-radius: 30rpx;
+  padding: 8rpx 22rpx;
+}
+.lvw-body {
+  flex: 1;
+  height: 0;
+}
+.lvw-img {
+  display: block;
+  width: 94%;
+  margin: 0 auto;
+  border-radius: 16rpx;
+}
+.lvw-tip {
+  color: rgba(255, 255, 255, 0.55);
+  font-size: 22rpx;
+  text-align: center;
+  padding: 24rpx 0 calc(env(safe-area-inset-bottom) + 30rpx);
+}

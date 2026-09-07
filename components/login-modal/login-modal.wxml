@@ -1,0 +1,52 @@
+<view class="lm-mask" catchtouchmove="preventMove" wx:if="{{show}}">
+  <view class="lm-card">
+    <view class="lm-title">微信登录</view>
+    <view class="lm-sub">{{tip}}</view>
+
+    <!-- 头像：点击通过 chooseAvatar 选择 -->
+    <button class="lm-avatar-btn" open-type="chooseAvatar" bind:chooseavatar="onChooseAvatar">
+      <image wx:if="{{avatarUrl}}" class="lm-avatar-img" src="{{avatarUrl}}" mode="aspectFill" />
+      <view wx:else class="lm-avatar-ph">{{nick ? nick.slice(0,1) : '头'}}</view>
+      <view class="lm-avatar-tip">{{avatarUrl ? '点击更换头像' : '点击选择头像'}}</view>
+    </button>
+
+    <!-- 昵称：type=nickname 唤起微信昵称快捷填充 -->
+    <input
+      class="lm-nick-input"
+      type="nickname"
+      placeholder="点击填写昵称"
+      placeholder-class="lm-ph"
+      value="{{nick}}"
+      bindinput="onNickInput"
+      bindblur="onNickInput"
+      maxlength="12"
+    />
+
+    <!-- 手机号：手动输入，或点下方按钮从微信获取 -->
+    <view class="lm-phone-label">手机号</view>
+    <input
+      class="lm-phone-input"
+      type="number"
+      maxlength="11"
+      placeholder="请输入手机号，或点下方按钮从微信获取"
+      placeholder-class="lm-ph"
+      value="{{phone}}"
+      bindinput="onPhoneInput"
+    />
+
+    <view class="lm-note">我们将获取你的微信头像、昵称与手机号，用于展示拼场身份与联系拼友。</view>
+
+    <button
+      class="lm-btn {{busy ? 'busy' : ''}}"
+      hover-class="lm-btn-hover"
+      open-type="getPhoneNumber"
+      bindgetphonenumber="onGetPhone"
+    >{{busy ? '登录中…' : '微信手机号一键登录'}}</button>
+
+    <view class="lm-or">— 或 —</view>
+
+    <view class="lm-btn ghost {{busy ? 'busy' : ''}}" bindtap="onManualLogin">使用已填手机号登录</view>
+
+    <view class="lm-cancel" bindtap="onCancel">暂不登录</view>
+  </view>
+</view>

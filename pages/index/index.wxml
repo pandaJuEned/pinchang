@@ -1,0 +1,169 @@
+<view class="page">
+  <!-- 头部 -->
+  <view class="hall-head">
+    <view class="head-left">
+      <view class="head-title">拼场大厅</view>
+      <view class="head-sub">找到附近的球场，一起开打 ⚡</view>
+    </view>
+    <view class="head-right">
+      <button class="head-share" open-type="share" hover-class="none">邀请球友拼场</button>
+      <view class="head-count" wx:if="{{!loading && activeCount}}">
+        <text class="head-count-num">{{activeCount}}</text>
+        <text class="head-count-txt">场在拼</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 分类筛选 -->
+  <scroll-view class="cat-scroll" scroll-x enhanced show-scrollbar="{{false}}">
+    <view class="cat-list">
+      <view
+        wx:for="{{cats}}"
+        wx:key="key"
+        class="cat-item {{activeCat === item.key ? 'on' : ''}}"
+        data-key="{{item.key}}"
+        bindtap="chooseCat"
+      >
+        <text class="cat-emoji">{{item.icon}}</text>
+        <text class="cat-name">{{item.name}}</text>
+      </view>
+    </view>
+  </scroll-view>
+
+  <!-- 加载骨架 -->
+  <block wx:if="{{loading}}">
+    <view class="game-card skeleton-card" wx:for="{{[1,2,3]}}" wx:key="*this">
+      <view class="sk-row">
+        <view class="skeleton-block sk-icon"></view>
+        <view class="sk-col">
+          <view class="skeleton-block sk-line-1"></view>
+          <view class="skeleton-block sk-line-2"></view>
+        </view>
+      </view>
+      <view class="skeleton-block sk-line-3"></view>
+    </view>
+  </block>
+
+  <!-- 列表 -->
+  <block wx:elif="{{list.length > 0}}">
+    <view
+      wx:for="{{list}}"
+      wx:key="_id"
+      class="game-card rise-in"
+      style="animation-delay: {{index * 60}}ms"
+      data-id="{{item._id}}"
+      bindtap="openDetail"
+    >
+      <!-- 头部：发光图标 + 场馆信息 + 状态 -->
+      <view class="card-top">
+        <view class="cat-avatar icon-breathe" style="background: {{item.iconBg}}; box-shadow: 0 10rpx 24rpx {{item.glow}};">
+          {{item.cat.icon}}
+        </view>
+        <view class="venue-box">
+          <view class="venue ellipsis">{{item.venue}}</view>
+          <view class="time-line">
+            <text>{{item.dateLabel}}</text>
+            <text class="dot">·</text>
+            <text>{{item.startTime}}-{{item.endTime}}</text>
+            <text wx:if="{{item.location}}" class="dot">·</text>
+            <text wx:if="{{item.location}}" class="loc-txt">📍{{item.location}}</text>
+            <text wx:if="{{item.levelShort}}" class="dot">·</text>
+            <text wx:if="{{item.levelShort}}" class="lv-chip">🏸{{item.levelShort}}</text>
+          </view>
+        </view>
+        <view class="status-chip {{item.statusClass}}">{{item.statusText}}</view>
+        <view wx:if="{{item.verified}}" class="status-chip vfy-all">✓ 已核销</view>
+        <view wx:elif="{{item.phase !== 'ended' && item.phase !== 'canceled'}}" class="status-chip vfy-part">待核销</view>
+        <view wx:if="{{item.reminderCount > 0 && item.phase !== 'ended' && item.phase !== 'canceled'}}" class="status-chip bell-chip">🔔 {{item.reminderCount}}</view>
+      </view>
+
+      <!-- 剩余名额主区 -->
+      <view class="seat-band">
+        <view class="seat-left {{item.remaining > 0 ? '' : 'zero'}} {{flashId === item._id ? 'num-pop' : ''}}">
+          <view class="seat-num">{{item.remaining}}</view>
+          <view class="seat-lab">剩余名额</view>
+        </view>
+        <view class="seat-mid">
+          <view class="prog-track">
+            <view class="prog-bar" style="width: {{item.percent}}%"></view>
+          </view>
+          <view class="prog-txt">
+            已占 <text class="strong">{{item.filled}}</text>/{{item.total}} 人
+            <text class="reserve-txt" wx:if="{{item.reserve > 1}}">（发起人留{{item.reserve}}）</text>
+          </view>
+        </view>
+      </view>
+
+      <!-- 底部 -->
+      <view class="card-bottom">
+        <view class="pub-box">
+          <text class="note ellipsis">{{item.note || '不限水平，随缘开打~'}}</text>
+          <view class="pub-line">
+            <view class="mini-avatar" style="background: {{item.pubColor}}">{{item.publisherChar}}</view>
+            <text class="pub-name">{{item.publisherName || '球友'}}</text>
+          </view>
+        </view>
+
+        <view class="act-box">
+          <view
+            wx:if="{{item.isOwner}}"
+            class="act-chip mine-chip"
+          >发起人</view>
+          <view
+            wx:elif="{{item.isJoined}}"
+            class="act-chip joined-chip"
+          >✓ 已报名</view>
+          <view
+            wx:elif="{{item.statusOpen && item.remaining > 0}}"
+            class="act-chip join-chip {{joiningId === item._id ? 'loading' : ''}}"
+            data-id="{{item._id}}"
+            data-index="{{index}}"
+            catchtap="handleJoin"
+          >{{joiningId === item._id ? '抢位中…' : '立即报名'}}</view>
+          <view
+            wx:else
+            class="act-chip full-chip"
+          >已拼满</view>
+        </view>
+      </view>
+    </view>
+  </block>
+
+  <!-- 空状态 -->
+  <view wx:else class="empty">
+    <view class="empty-icon">🏟️</view>
+    <view class="empty-title">暂无可报名的拼场</view>
+    <view class="empty-sub">已拼满的场次不再展示，去「发布」发起你的第一场吧</view>
+  </view>
+
+  <view class="safe-pad"></view>
+
+  <!-- 微信登录引导（未登录报名时弹出） -->
+  <login-modal show="{{showLogin}}" tip="微信登录后即可报名抢位" bind:success="handleLoginSuccess" bind:cancel="handleLoginCancel" />
+
+  <!-- 首次打开说明 -->
+  <view class="nt-mask {{showNotice ? 'show' : ''}}" catchtouchmove="noop">
+    <view class="nt-card">
+      <view class="nt-badge">🏟️</view>
+      <view class="nt-title">关于本小程序</view>
+      <view class="nt-text">
+        本小程序是个人开发者为「厦门大学」小程序 <text class="hl">厦大体育</text> 内的场馆预约场景做的适配工具，用于识别预约信息、发起拼场报名与开场提醒，不提供内容发布、社区互动或信息流浏览功能。
+      </view>
+      <view class="nt-text">
+        上传预约截图后会自动识别场馆 / 日期 / 场次，识别逻辑针对厦大体育的预约页面做过适配。
+      </view>
+      <view class="nt-section-title">🏸 羽毛球等级说明</view>
+      <view class="nt-text">
+        发布或参与拼场前，需要先填写自己的 <text class="hl">中羽等级（1-9 级）</text>：1 级为极度入门，9 级为专业/半专业，数字越大水平越高。发起人还可建议本场的等级区间，方便水平相当的球友一起开打。
+      </view>
+      <view class="nt-warn">
+        通过其他途径（第三方平台、其它场馆系统等）获取的截图，不保证识别结果正确，请务必手动核对后再发布。
+      </view>
+      <view class="nt-btn" bindtap="closeNotice">我知道了</view>
+      <view class="nt-tip">仅首次打开提示</view>
+    </view>
+  </view>
+
+  <!-- 等级设置弹层（报名前需先填写自己的羽毛球等级） -->
+  <level-modal show="{{showLevel}}" bind:confirm="handleLevelConfirm" bind:cancel="handleLevelCancel" />
+</view>

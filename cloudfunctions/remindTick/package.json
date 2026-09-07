@@ -1,0 +1,9 @@
+{
+  "name": "remindTick",
+  "version": "1.0.0",
+  "description": "开场提醒定时推送云函数：扫描 reminders 集合并通过订阅消息推送",
+  "main": "index.js",
+  "dependencies": {
+    "wx-server-sdk": "~2.6.3"
+  }
+}

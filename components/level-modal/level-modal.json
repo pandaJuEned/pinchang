@@ -1,0 +1,6 @@
+{
+  "component": true,
+  "usingComponents": {
+    "level-viewer": "/components/level-viewer/level-viewer"
+  }
+}

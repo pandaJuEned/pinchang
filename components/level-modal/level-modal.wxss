@@ -1,0 +1,137 @@
+.lvm-mask {
+  position: fixed;
+  left: 0;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(15, 23, 42, 0.55);
+  z-index: 9999;
+  display: flex;
+  align-items: flex-end;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.25s ease, visibility 0.25s ease;
+}
+.lvm-mask.show {
+  opacity: 1;
+  visibility: visible;
+}
+.lvm-card {
+  width: 100%;
+  background: #fff;
+  border-radius: 36rpx 36rpx 0 0;
+  padding: 20rpx 32rpx calc(env(safe-area-inset-bottom) + 28rpx);
+  box-sizing: border-box;
+  transform: translateY(60rpx);
+  transition: transform 0.28s ease;
+}
+.lvm-mask.show .lvm-card {
+  transform: translateY(0);
+}
+.lvm-grip {
+  width: 76rpx;
+  height: 8rpx;
+  border-radius: 6rpx;
+  background: #e2e8f2;
+  margin: 0 auto 22rpx;
+}
+.lvm-title {
+  font-size: 36rpx;
+  font-weight: 800;
+  color: #16233c;
+  text-align: center;
+}
+.lvm-sub {
+  font-size: 24rpx;
+  color: #7b8799;
+  line-height: 1.6;
+  margin-top: 14rpx;
+  text-align: center;
+}
+
+/* 等级横滑选择 */
+.lvm-chips {
+  white-space: nowrap;
+  margin-top: 26rpx;
+}
+.lvm-chip-row {
+  display: inline-flex;
+  padding: 4rpx 2rpx;
+}
+.lvm-chip {
+  flex: none;
+  min-width: 92rpx;
+  text-align: center;
+  background: #f6f8fd;
+  color: #5b6779;
+  font-size: 26rpx;
+  font-weight: 600;
+  border-radius: 34rpx;
+  padding: 14rpx 22rpx;
+  margin-right: 16rpx;
+  box-sizing: border-box;
+  transition: all 0.18s ease;
+}
+.lvm-chip.on {
+  color: #fff;
+  box-shadow: 0 8rpx 18rpx rgba(22, 35, 60, 0.18);
+}
+
+/* 选中等级详情 */
+.lvm-detail {
+  margin-top: 26rpx;
+  background: #f8faff;
+  border-left: 8rpx solid #2f6bff;
+  border-radius: 8rpx 20rpx 20rpx 8rpx;
+  padding: 22rpx 24rpx;
+}
+.lvm-dname {
+  display: flex;
+  align-items: baseline;
+}
+.lvm-dn {
+  font-size: 32rpx;
+  font-weight: 800;
+  color: #16233c;
+}
+.lvm-dlv {
+  font-size: 22rpx;
+  color: #2f6bff;
+  margin-left: 14rpx;
+  font-weight: 600;
+}
+.lvm-drow {
+  font-size: 24rpx;
+  color: #5b6678;
+  line-height: 1.7;
+  margin-top: 10rpx;
+}
+
+.lvm-link {
+  margin-top: 22rpx;
+  text-align: center;
+  font-size: 24rpx;
+  color: #2f6bff;
+  background: #eef4ff;
+  border-radius: 30rpx;
+  padding: 14rpx 0;
+}
+.lvm-btn {
+  margin-top: 26rpx;
+  height: 92rpx;
+  line-height: 92rpx;
+  border-radius: 46rpx;
+  background: linear-gradient(135deg, #4d86ff 0%, #2f6bff 60%, #2458ea 100%);
+  color: #fff;
+  font-size: 30rpx;
+  font-weight: 600;
+  text-align: center;
+  box-shadow: 0 12rpx 26rpx rgba(47, 107, 255, 0.26);
+}
+.lvm-cancel {
+  margin-top: 20rpx;
+  text-align: center;
+  color: #9aa3b5;
+  font-size: 26rpx;
+  padding: 8rpx 0;
+}

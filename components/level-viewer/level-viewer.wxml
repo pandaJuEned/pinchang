@@ -1,0 +1,15 @@
+<view class="lvw-mask {{show ? 'show' : ''}}" catchtouchmove="noop">
+  <view class="lvw-head">
+    <view class="lvw-title">🏸 中羽等级科普</view>
+    <view class="lvw-close" bindtap="close">✕ 关闭</view>
+  </view>
+  <scroll-view class="lvw-body" scroll-y>
+    <image
+      class="lvw-img"
+      src="{{imageSrc}}"
+      mode="widthFix"
+      show-menu-by-longpress="{{true}}"
+    />
+    <view class="lvw-tip">等级仅作参考，数字越大水平越高 · 长按图片可保存或转发给球友</view>
+  </scroll-view>
+</view>

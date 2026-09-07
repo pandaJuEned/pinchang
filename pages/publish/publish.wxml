@@ -1,0 +1,228 @@
+<view class="page">
+  <!-- 流程引导 -->
+  <view class="flow-head">
+    <view class="flow-step {{parseState >= 1 ? 'done' : ''}}">
+      <view class="step-ic {{parseState === 1 ? 'spin' : ''}}">{{parseState === 1 ? '⋯' : '①'}}</view>
+      <text>上传截图</text>
+    </view>
+    <view class="flow-line {{parseState >= 2 ? 'done' : ''}}"></view>
+    <view class="flow-step {{parseState >= 2 ? 'done' : ''}}">
+      <view class="step-ic">{{parseState >= 2 ? '✓' : '②'}}</view>
+      <text>智能识别</text>
+    </view>
+    <view class="flow-line {{published ? 'done' : ''}}"></view>
+    <view class="flow-step {{published ? 'done' : ''}}">
+      <view class="step-ic">{{published ? '✓' : '③'}}</view>
+      <text>发布上线</text>
+    </view>
+  </view>
+
+  <!-- OCR 未配置提示（前置检测） -->
+  <view wx:if="{{ocrHint}}" class="ocr-notice">
+    <text class="on-ic">⚠️</text>
+    <text class="on-txt">{{ocrHint}}</text>
+  </view>
+
+  <!-- 编辑模式提示 -->
+  <view wx:if="{{editMode}}" class="edit-banner">✏️ 编辑拼场信息，修改后点「保存修改」即可</view>
+
+  <!-- 上传区 -->
+  <view class="up-card card {{errors.cover ? 'up-err' : ''}}">
+    <view class="up-main" bindtap="chooseImage">
+      <image wx:if="{{img.preview}}" class="up-img" src="{{img.preview}}" mode="aspectFit" />
+      <view wx:else class="up-placeholder">
+        <view class="up-cam">📷</view>
+        <view class="up-title">上传球场预约订单截图</view>
+        <view class="up-sub">系统自动识别场馆 / 日期 / 场次时间</view>
+      </view>
+    </view>
+    <view class="up-note">🔒 截图仅用于自动识别场次信息与到场核验，不对外公开展示</view>
+
+    <!-- 识别中遮罩 -->
+    <view wx:if="{{parseState === 1}}" class="up-mask">
+      <view class="scan-line"></view>
+      <view class="scan-tip">{{parseTip}}</view>
+      <view class="scan-skel">
+        <view class="skeleton-block sk1"></view>
+        <view class="skeleton-block sk2"></view>
+        <view class="skeleton-block sk3"></view>
+      </view>
+    </view>
+
+    <!-- 识别结果提示 -->
+    <view wx:if="{{parseState === 2}}" class="result-bar ok">
+      <text class="rb-ic">✅</text>
+      <text class="rb-txt">{{parseTip}}</text>
+    </view>
+    <view wx:elif="{{parseState === 3}}" class="result-bar bad">
+      <text class="rb-ic">⚠️</text>
+      <text class="rb-txt">{{parseTip}}</text>
+    </view>
+
+    <view wx:if="{{img.preview}}" class="up-tools">
+      <view class="tool-btn" bindtap="retryParse">↻ 重新识别</view>
+      <view class="tool-btn danger" bindtap="removeImage">✕ 重新选择</view>
+    </view>
+    <view wx:if="{{errors.cover}}" class="err-tip">{{errors.cover}}</view>
+  </view>
+
+  <!-- 信息表单 -->
+  <view class="form-card card">
+    <view class="sec-title">场馆信息</view>
+
+    <view class="field">
+      <view class="label">场馆名称 <text class="req">*</text></view>
+      <input
+        class="field-input {{errors.venue ? 'err shake' : ''}}"
+        placeholder="例如：星光羽毛球馆（识别结果可修改）"
+        placeholder-class="ph"
+        value="{{form.venue}}"
+        maxlength="30"
+        bindinput="onVenue"
+      />
+      <view wx:if="{{errors.venue}}" class="err-tip">{{errors.venue}}</view>
+    </view>
+
+    <view class="field">
+      <view class="label">场次位置 <text class="req">*</text></view>
+      <input
+        class="field-input {{errors.location ? 'err shake' : ''}}"
+        placeholder="例如：3号场 / A区（OCR 自动识别，可修改）"
+        placeholder-class="ph"
+        value="{{form.location}}"
+        maxlength="30"
+        bindinput="onLocation"
+      />
+      <view wx:if="{{errors.location}}" class="err-tip">{{errors.location}}</view>
+      <view class="field-hint">预约场次下、日期与时间之间的场地信息</view>
+    </view>
+
+    <view class="field">
+      <view class="label">运动分类</view>
+      <view class="cat-wrap">
+        <view
+          wx:for="{{cats}}"
+          wx:key="key"
+          class="cat-chip {{form.category === item.key ? 'on' : ''}}"
+          data-key="{{item.key}}"
+          bindtap="chooseCategory"
+        >
+          <text>{{item.icon}}</text>
+          <text class="cn">{{item.name}}</text>
+        </view>
+      </view>
+    </view>
+
+    <view class="field">
+      <view class="label">活动日期 <text class="req">*</text></view>
+      <picker mode="date" value="{{form.date}}" start="{{dateRangeStart}}" end="{{dateRangeEnd}}" bindchange="onDate">
+        <view class="picker-box {{errors.date ? 'err' : ''}}">
+          <text class="pb-label">{{form.date}}</text>
+          <text class="pb-arrow">▾</text>
+        </view>
+      </picker>
+      <view wx:if="{{errors.date}}" class="err-tip">{{errors.date}}</view>
+    </view>
+
+    <view class="field">
+      <view class="label">场次时间 <text class="req">*</text></view>
+      <view class="time-row {{errors.time ? 'err' : ''}}">
+        <picker class="tp" mode="time" value="{{form.startTime}}" bindchange="onStart">
+          <view class="tp-box">{{form.startTime}}</view>
+        </picker>
+        <view class="tp-arrow">—</view>
+        <picker class="tp" mode="time" value="{{form.endTime}}" bindchange="onEnd">
+          <view class="tp-box">{{form.endTime}}</view>
+        </picker>
+      </view>
+      <view wx:if="{{errors.time}}" class="err-tip">{{errors.time}}</view>
+    </view>
+
+    <view class="sec-title">人数设置</view>
+    <view class="num-row">
+      <view class="num-card">
+        <view class="nc-label">总人数上限</view>
+        <view class="stepper">
+          <view class="step-btn" data-delta="-1" bindtap="stepTotal">−</view>
+          <view class="step-val {{errors.capacity ? 'err-num' : ''}}">{{form.total}}</view>
+          <view class="step-btn" data-delta="1" bindtap="stepTotal">＋</view>
+        </view>
+        <view class="nc-hint">全场最多可容纳</view>
+      </view>
+      <view class="num-card {{errors.capacity ? 'warn' : ''}}">
+        <view class="nc-label">自留名额</view>
+        <view class="stepper">
+          <view class="step-btn" data-delta="-1" bindtap="stepReserve">−</view>
+          <view class="step-val {{errors.capacity ? 'err-num' : ''}}">{{form.reserve}}</view>
+          <view class="step-btn" data-delta="1" bindtap="stepReserve">＋</view>
+        </view>
+        <view class="nc-hint">你为自己/同伴保留</view>
+      </view>
+    </view>
+    <view wx:if="{{errors.capacity}}" class="capacity-err err-tip">{{errors.capacity}}</view>
+    <view wx:else class="capacity-ok">
+      拼友可报名 <text class="co-num">{{form.total - form.reserve}}</text> 个名额
+    </view>
+
+    <view class="field">
+      <view class="label">等级建议 <text class="req">*</text></view>
+      <picker mode="selector" range="{{levelOptions}}" value="{{levelIndex}}" bindchange="onLevelChange">
+        <view class="picker-box">
+          <text class="pb-label">{{levelOptions[levelIndex]}}</text>
+          <text class="pb-arrow">▾</text>
+        </view>
+      </picker>
+      <view class="field-hint">默认不限制等级；可建议参与球友的水平区间（中羽 1-9 级）</view>
+    </view>
+
+    <view class="field">
+      <view class="label">拼场说明 <text class="opt">选填</text></view>
+      <view class="tag-wrap">
+        <view
+          wx:for="{{noteTags}}"
+          wx:key="name"
+          class="tag-chip {{item.on ? 'on' : ''}}"
+          data-tag="{{item.name}}"
+          bindtap="toggleNoteTag"
+        >{{item.name}}</view>
+      </view>
+      <view class="field-hint">从预设说明中选择（最多 3 个），不支持自定义文字</view>
+    </view>
+
+    <view class="field">
+      <view class="label">开场提醒</view>
+      <view class="remind-wrap">
+        <view
+          wx:for="{{reminderList}}"
+          wx:key="key"
+          class="remind-chip {{item.on ? 'on' : ''}}"
+          data-index="{{index}}"
+          bindtap="toggleReminder"
+        >
+          <text class="rc-dot">{{item.on ? '✓' : ''}}</text>
+          <text>{{item.label}}</text>
+        </view>
+        <view class="remind-tip">{{reminderEnabled ? '勾选后将在对应时间推送订阅消息提醒你（可多选）' : '提醒时间可勾选保存；推送订阅消息需先在 utils/config.js 配置有效的 subscribeTemplateId'}}</view>
+      </view>
+    </view>
+
+    <view class="publish-hint">
+      <text class="ph-ic">🔒</text>
+      <text>报名使用云端事务，多人同时抢位也不会超卖</text>
+    </view>
+
+    <button
+      class="primary-btn submit-btn {{submitting || parseState === 1 ? 'disabled' : ''}}"
+      hover-class="primary-btn-hover"
+      bindtap="submit"
+    >{{submitting ? (editMode ? '保存中…' : '发布中…') : (editMode ? '💾 保存修改' : '🚀 发布拼场')}}</button>
+
+    <view wx:if="{{editMode}}" class="cancel-edit" bindtap="exitEdit">取消编辑</view>
+  </view>
+
+  <!-- 微信登录引导（未登录点击发布时弹出） -->
+  <login-modal show="{{showLogin}}" tip="微信登录后即可发布拼场" bind:success="handleLoginSuccess" bind:cancel="handleLoginCancel" />
+
+  <!-- 等级设置弹层（发布前需先填写自己的羽毛球等级） -->
+  <level-modal show="{{showLevel}}" bind:confirm="handleLevelConfirm" bind:cancel="handleLevelCancel" />
+</view>

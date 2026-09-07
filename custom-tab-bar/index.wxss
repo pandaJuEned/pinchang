@@ -1,0 +1,55 @@
+.tab-bar {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 80;
+  height: 104rpx;
+  padding-bottom: constant(safe-area-inset-bottom);
+  padding-bottom: env(safe-area-inset-bottom);
+  background: rgba(255, 255, 255, 0.98);
+  box-shadow: 0 -8rpx 30rpx rgba(31, 60, 120, 0.08);
+  display: flex;
+}
+
+.tab-item {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.tab-text {
+  font-size: 28rpx;
+  font-weight: 500;
+  color: #9aa3b5;
+  letter-spacing: 2rpx;
+  transition: all 0.2s ease;
+  line-height: 48rpx;
+  padding: 0 26rpx;
+  border-radius: 26rpx;
+}
+
+.tab-item.active .tab-text {
+  color: #ffffff;
+  font-weight: 600;
+  background: linear-gradient(135deg, #4d86ff 0%, #2f6bff 100%);
+  box-shadow: 0 6rpx 16rpx rgba(47, 107, 255, 0.32);
+}
+
+.tab-dot {
+  width: 8rpx;
+  height: 8rpx;
+  border-radius: 50%;
+  background: #2f6bff;
+  margin-top: 4rpx;
+  animation: tabDotAnim 0.3s ease both;
+}
+
+@keyframes tabDotAnim {
+  from { opacity: 0; transform: scale(0); }
+  to { opacity: 1; transform: scale(1); }
+}

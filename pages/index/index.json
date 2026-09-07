@@ -1,0 +1,11 @@
+{
+  "navigationBarTitleText": "拼场大厅",
+  "enablePullDownRefresh": true,
+  "backgroundTextStyle": "dark",
+  "backgroundColor": "#f2f6fc",
+  "usingComponents": {
+    "login-modal": "../../components/login-modal/login-modal",
+    "level-modal": "../../components/level-modal/level-modal",
+    "level-viewer": "../../components/level-viewer/level-viewer"
+  }
+}

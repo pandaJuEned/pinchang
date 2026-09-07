@@ -1,0 +1,210 @@
+<view class="page">
+  <!-- 个人信息 -->
+  <view class="profile-card card">
+    <view class="avatar" style="background: {{avatarColor}}">
+      <image wx:if="{{avatarUrl}}" class="avatar-img" src="{{avatarUrl}}" mode="aspectFill" />
+      <text wx:else>{{avatarChar}}</text>
+    </view>
+    <view class="profile-main">
+      <block wx:if="{{!editing}}">
+        <view class="nick-line">
+          <text class="nick">{{nick}}</text>
+          <text class="edit-btn" bindtap="startEdit">✎ 编辑</text>
+        </view>
+        <view wx:if="{{loggedIn}}" class="role-txt">✅ 已微信登录 · 用截图发起拼场</view>
+        <view wx:if="{{loggedIn && phone}}" class="phone-txt">📱 {{phone}}</view>
+        <view wx:else class="role-line">
+          <text class="role-txt">发布/报名需先微信登录</text>
+          <text class="login-chip" bindtap="loginFromMine">🔓 微信登录</text>
+        </view>
+      </block>
+      <block wx:else>
+        <view class="edit-box">
+          <input class="nick-input" value="{{editValue}}" maxlength="12" bindinput="onEditInput" focus />
+          <text class="save-btn" bindtap="saveNick">保存</text>
+          <text class="cancel-btn" bindtap="cancelEdit">取消</text>
+        </view>
+      </block>
+    </view>
+    <view class="level-badge {{levelShort ? 'on' : ''}}" bindtap="openLevel">
+      <block wx:if="{{levelShort}}">🏸 {{levelShort}} 级</block>
+      <block wx:else>🏸 设置等级</block>
+    </view>
+  </view>
+
+  <!-- 统计分析 -->
+  <view class="stats-card card">
+    <view class="stats-head">
+      <text class="stats-title">我的数据</text>
+      <text class="stats-sub">（统计与拼场记录一致）</text>
+    </view>
+    <view class="stats-grid">
+      <view class="stat-item" wx:for="{{stats}}" wx:key="key">
+        <view class="stat-icon">{{item.icon}}</view>
+        <view class="stat-value">{{item.value}}</view>
+        <view class="stat-label">{{item.label}}</view>
+      </view>
+    </view>
+    <view class="stats-extra">
+      <text>平均每场拼友：{{avgJoiner}} 人</text>
+    </view>
+
+    <view wx:if="{{hotVenues.length}}" class="hot-box">
+      <view class="hot-title">🔥 常去场馆 TOP {{hotVenues.length}}</view>
+      <view class="hot-list">
+        <view class="hot-item" wx:for="{{hotVenues}}" wx:key="name">
+          <text class="hot-rank {{index === 0 ? 'first' : ''}}">{{index + 1}}</text>
+          <text class="hot-name ellipsis">{{item.name}}</text>
+          <text class="hot-count">{{item.count}} 次</text>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 板块切换 -->
+  <view class="seg-bar card">
+    <view class="seg {{seg === 'pub' ? 'on' : ''}}" data-seg="pub" bindtap="switchSeg">
+      我发布的
+      <text class="seg-num" wx:if="{{pubList.length}}">{{pubList.length}}</text>
+    </view>
+    <view class="seg {{seg === 'join' ? 'on' : ''}}" data-seg="join" bindtap="switchSeg">
+      我报名的
+      <text class="seg-num" wx:if="{{joinList.length}}">{{joinList.length}}</text>
+    </view>
+  </view>
+
+  <view class="swipe-hint" wx:if="{{seg === 'pub' ? pubList.length : joinList.length}}">提示：左滑卡片{{seg === 'pub' ? '可删除场次' : '可取消报名（开场前 15 分钟截止）'}}</view>
+
+  <!-- 我发布的 -->
+  <block wx:if="{{seg === 'pub'}}">
+    <block wx:if="{{loading}}">
+      <view class="skeleton-block mini-sk" wx:for="{{[1,2]}}" wx:key="*this"></view>
+    </block>
+    <block wx:elif="{{pubList.length}}">
+      <view class="swipe-cell rise-in" wx:for="{{pubList}}" wx:key="_id">
+        <view class="swipe-action del" data-id="{{item._id}}" data-index="{{index}}" catchtap="onDeleteGame">
+          <text class="swipe-ico">🗑️</text>
+          <text class="swipe-txt">{{acting === 'game-' + item._id ? '删除中…' : '删除'}}</text>
+        </view>
+        <view class="mini-card card swipe-card {{moveId === item._id ? 'dragging' : ''}}"
+          style="{{item.swipeStyle}}"
+          data-id="{{item._id}}" data-index="{{index}}" data-swipeable="{{true}}"
+          bindtouchstart="onCardTouchStart" bindtouchmove="onCardTouchMove"
+          bindtouchend="onCardTouchEnd" bindtouchcancel="onCardTouchEnd" bindtap="onCardTap">
+          <view class="mini-top">
+            <view class="m-avatar" style="background: {{item.iconBg}}; box-shadow: 0 6rpx 16rpx {{item.glow}};">{{item.cat.icon}}</view>
+            <view class="m-info">
+              <view class="m-venue ellipsis">{{item.venue}}</view>
+              <view class="m-time">{{item.dateLabel}} · {{item.startTime}}-{{item.endTime}}</view>
+            </view>
+            <view class="m-status {{item.statusClass}}">{{item.statusText}}</view>
+            <view wx:if="{{item.reminderCount > 0}}" class="m-bell">🔔 {{item.reminderCount}}</view>
+          </view>
+          <view class="m-prog">
+            <view class="prog-track"><view class="prog-bar" style="width: {{item.percent}}%"></view></view>
+            <text class="m-prog-txt">已占 {{item.filled}}/{{item.total}} 人</text>
+            <view class="m-vfy {{item.verified ? 'all' : ''}} {{item.canVerifyCourt ? 'todo' : ''}}" catchtap="verifyCourt" data-list="pubList" data-index="{{index}}" data-id="{{item._id}}">
+              {{item.verified ? '✓ 已核销场地' : (item.canVerifyCourt ? '点击核销场地' : '待核销')}}
+            </view>
+          </view>
+          <view class="mini-foot" wx:if="{{!item.canceled && !item.finished}}">
+            <view class="foot-action enroll" wx:if="{{item.joined > 0}}" data-id="{{item._id}}" data-index="{{index}}" catchtap="viewEnrolls">
+              👥 查看报名（{{item.joined}}）
+            </view>
+            <view class="foot-action edit" data-id="{{item._id}}" data-index="{{index}}" catchtap="onEditGame">✏️ 编辑</view>
+          </view>
+        </view>
+      </view>
+    </block>
+    <view wx:else class="empty">
+      <view class="empty-icon">🏸</view>
+      <view class="empty-title">还没有发布过拼场</view>
+      <view class="empty-sub">上传预约截图，一键发起拼场</view>
+    </view>
+  </block>
+
+  <!-- 我报名的 -->
+  <block wx:if="{{seg === 'join'}}">
+    <block wx:if="{{loading}}">
+      <view class="skeleton-block mini-sk" wx:for="{{[1,2]}}" wx:key="*this"></view>
+    </block>
+    <block wx:elif="{{joinList.length}}">
+      <view class="swipe-cell rise-in" wx:for="{{joinList}}" wx:key="_id">
+        <view wx:if="{{!item.finished && !item.canceled && !item.cancelLocked}}" class="swipe-action cancel" data-id="{{item._id}}" data-index="{{index}}" catchtap="cancelJoin">
+          <text class="swipe-ico">↩️</text>
+          <text class="swipe-txt">{{acting === 'cancel-' + item._id ? '取消中…' : '取消报名'}}</text>
+        </view>
+        <view class="mini-card card swipe-card {{moveId === item._id ? 'dragging' : ''}}"
+          style="{{item.swipeStyle}}"
+          data-id="{{item._id}}" data-index="{{index}}" data-swipeable="{{!item.finished && !item.canceled && !item.cancelLocked}}"
+          bindtouchstart="onCardTouchStart" bindtouchmove="onCardTouchMove"
+          bindtouchend="onCardTouchEnd" bindtouchcancel="onCardTouchEnd" bindtap="onCardTap">
+          <view class="mini-top">
+            <view class="m-avatar" style="background: {{item.iconBg}}; box-shadow: 0 6rpx 16rpx {{item.glow}};">{{item.cat.icon}}</view>
+            <view class="m-info">
+              <view class="m-venue ellipsis">{{item.venue}}</view>
+              <view class="m-time">{{item.dateLabel}} · {{item.startTime}}-{{item.endTime}}</view>
+              <view class="m-join-time">报名于 {{item.joinTime}}</view>
+            </view>
+            <view class="m-status {{item.statusClass}}">{{item.statusText}}</view>
+            <view wx:if="{{item.reminderCount > 0}}" class="m-bell">🔔 {{item.reminderCount}}</view>
+          </view>
+          <view class="m-prog">
+            <view class="prog-track"><view class="prog-bar" style="width: {{item.percent}}%"></view></view>
+            <text class="m-prog-txt">已占 {{item.filled}}/{{item.total}} 人 · 发起人 {{item.publisherName || '球友'}}</text>
+            <view class="m-vfy {{item.verified ? 'all' : ''}} {{item.canVerifyCourt ? 'todo' : ''}}" catchtap="verifyCourt" data-list="joinList" data-index="{{index}}" data-id="{{item._id}}">
+              {{item.verified ? '✓ 已核销场地' : (item.canVerifyCourt ? '点击核销场地' : '待核销')}}
+            </view>
+          </view>
+          <view wx:if="{{item.canOpenCourt}}" class="m-court" catchtap="openCourt" data-id="{{item._id}}" data-index="{{index}}">
+            🏟️ 开启球场
+          </view>
+          <view class="mini-foot" wx:if="{{item.finished}}">
+            <view class="foot-end">⏰ 已结束</view>
+          </view>
+          <view class="mini-foot" wx:elif="{{item.canceled}}">
+            <view class="foot-end warn">🚫 该拼场已取消</view>
+          </view>
+          <view class="mini-foot" wx:elif="{{item.cancelLocked}}">
+            <view class="foot-end">🔒 开场前 15 分钟内不可取消报名</view>
+          </view>
+        </view>
+      </view>
+    </block>
+    <view wx:else class="empty">
+      <view class="empty-icon">🎯</view>
+      <view class="empty-title">还没有报名拼场</view>
+      <view class="empty-sub">去大厅看到心仪的场次就快抢位吧</view>
+    </view>
+  </block>
+
+  <!-- 报名名单弹层 -->
+  <view class="mask {{enrollSheet.show ? 'show' : ''}}" bindtap="closeSheet"></view>
+  <view class="sheet {{enrollSheet.show ? 'show' : ''}}">
+    <view class="sheet-bar"></view>
+    <view class="sheet-title">{{enrollSheet.title}}<text class="sheet-close" bindtap="closeSheet">✕</text></view>
+    <scroll-view scroll-y class="sheet-body">
+      <view wx:if="{{!enrollSheet.list.length}}" class="empty">
+        <view class="empty-icon">🤝</view>
+        <view class="empty-sub">暂无球友报名，分享出去拉人吧</view>
+      </view>
+      <view class="enroll-item" wx:for="{{enrollSheet.list}}" wx:key="no">
+        <view class="enroll-no">{{item.no}}</view>
+        <view class="enroll-avatar" style="background: {{item.color}}">
+          <image wx:if="{{item.avatar}}" class="enroll-avatar-img" src="{{item.avatar}}" mode="aspectFill" />
+          <text wx:else>{{item.char}}</text>
+        </view>
+        <view class="enroll-name ellipsis">{{item.name}}</view>
+        <view wx:if="{{item.levelShort}}" class="enroll-level" style="color: {{item.levelColor}}; background: {{item.levelColor}}1a;">{{item.levelShort}}</view>
+        <view wx:else class="enroll-level none">未定级</view>
+        <view class="enroll-time">{{item.date}}</view>
+      </view>
+    </scroll-view>
+  </view>
+
+  <!-- 微信登录引导 -->
+  <login-modal show="{{showLogin}}" tip="微信登录后即可发布拼场、报名抢位" bind:success="handleLoginSuccess" bind:cancel="handleLoginCancel" />
+
+  <!-- 等级设置弹层 -->
+  <level-modal show="{{showLevel}}" bind:confirm="handleLevelConfirm" bind:cancel="handleLevelCancel" />
+</view>

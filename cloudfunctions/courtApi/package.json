@@ -1,0 +1,9 @@
+{
+  "name": "courtApi",
+  "version": "1.0.0",
+  "description": "Court Buddy 核心业务云函数：发布/报名/取消/查询（事务防超卖）",
+  "main": "index.js",
+  "dependencies": {
+    "wx-server-sdk": "~2.6.3"
+  }
+}

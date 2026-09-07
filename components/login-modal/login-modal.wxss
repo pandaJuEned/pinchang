@@ -1,0 +1,156 @@
+.lm-mask {
+  position: fixed;
+  left: 0;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(15, 23, 42, 0.55);
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.lm-card {
+  width: 600rpx;
+  max-height: 85vh;
+  background: #ffffff;
+  border-radius: 32rpx;
+  padding: 48rpx 40rpx 36rpx;
+  text-align: center;
+  overflow-y: auto;
+  box-sizing: border-box;
+}
+.lm-badge {
+  font-size: 76rpx;
+  line-height: 1;
+}
+.lm-title {
+  font-size: 38rpx;
+  font-weight: 800;
+  color: #16233c;
+  margin-top: 20rpx;
+}
+.lm-sub {
+  font-size: 27rpx;
+  color: #2f6bff;
+  margin-top: 8rpx;
+  font-weight: 600;
+}
+.lm-note {
+  font-size: 23rpx;
+  color: #8a94a6;
+  margin: 24rpx 0 36rpx;
+  line-height: 1.6;
+}
+/* 头像选择 */
+.lm-avatar-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  margin: 32rpx auto 8rpx;
+  padding: 0;
+  width: 180rpx;
+  height: 180rpx;
+  background: transparent;
+  line-height: 1;
+}
+.lm-avatar-btn::after {
+  border: none;
+}
+.lm-avatar-img {
+  width: 160rpx;
+  height: 160rpx;
+  border-radius: 50%;
+  border: 4rpx solid #2f6bff;
+  box-shadow: 0 10rpx 24rpx rgba(47, 107, 255, 0.22);
+}
+.lm-avatar-ph {
+  width: 160rpx;
+  height: 160rpx;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #4d86ff, #2f6bff);
+  color: #fff;
+  font-size: 64rpx;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.lm-avatar-tip {
+  margin-top: 12rpx;
+  font-size: 22rpx;
+  color: #9aa3b5;
+}
+/* 昵称输入 */
+.lm-nick-input {
+  width: 100%;
+  height: 88rpx;
+  margin: 16rpx 0 4rpx;
+  padding: 0 24rpx;
+  box-sizing: border-box;
+  background: #f4f6fb;
+  border-radius: 18rpx;
+  font-size: 30rpx;
+  color: #16233c;
+  text-align: center;
+}
+.lm-ph {
+  color: #aab2c2;
+}
+/* 手机号输入 */
+.lm-phone-label {
+  width: 100%;
+  text-align: left;
+  font-size: 24rpx;
+  color: #7b8799;
+  margin-top: 20rpx;
+  margin-bottom: 10rpx;
+}
+.lm-phone-input {
+  width: 100%;
+  height: 88rpx;
+  padding: 0 24rpx;
+  box-sizing: border-box;
+  background: #f4f6fb;
+  border-radius: 18rpx;
+  font-size: 30rpx;
+  color: #16233c;
+}
+.lm-or {
+  margin: 22rpx 0 6rpx;
+  font-size: 22rpx;
+  color: #aab2c2;
+}
+/* 次按钮（手动登录） */
+.lm-btn.ghost {
+  background: #eef4ff;
+  color: #2f6bff;
+  box-shadow: none;
+}
+.lm-btn {
+  background: linear-gradient(135deg, #4d86ff 0%, #2f6bff 60%, #2458ea 100%);
+  color: #fff;
+  border-radius: 48rpx;
+  font-size: 32rpx;
+  font-weight: 600;
+  height: 96rpx;
+  line-height: 96rpx;
+  box-shadow: 0 12rpx 26rpx rgba(47, 107, 255, 0.28);
+  transition: transform 0.15s ease;
+}
+.lm-btn::after {
+  border: none;
+}
+.lm-btn.busy {
+  opacity: 0.6;
+}
+.lm-btn-hover {
+  transform: scale(0.98);
+}
+.lm-cancel {
+  margin-top: 26rpx;
+  color: #9aa3b5;
+  font-size: 26rpx;
+  padding: 8rpx 0;
+}

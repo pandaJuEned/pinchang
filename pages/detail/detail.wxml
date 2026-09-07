@@ -1,0 +1,261 @@
+<view class="page">
+  <view wx:if="{{soloMode}}" class="solo-tip">点右上角「前往小程序」即可报名抢位 →</view>
+
+  <block wx:if="{{loading}}">
+    <view class="skeleton-block big-sk"></view>
+    <view class="skeleton-block mid-sk"></view>
+  </block>
+
+  <block wx:elif="{{game}}">  
+    <!-- 详情卡片 -->
+    <view class="d-card card">
+      <view class="d-head">
+        <view class="cat-avatar" style="background: {{game.iconBg}}; box-shadow: 0 10rpx 24rpx {{game.glow}};">
+          {{game.cat.icon}}
+        </view>
+        <view class="d-head-main">
+          <view class="d-venue ellipsis">{{game.venue}}</view>
+          <view class="d-sub">{{game.cat.name}} · {{game.dateLabel}}</view>
+        </view>
+        <view class="status-chip {{game.statusClass}}">
+          {{game.statusText}}
+        </view>
+      </view>
+
+      <!-- 预约凭证：仅发起人与已报名球友可见，不对外公开展示 -->
+      <block wx:if="{{game.coverFileID && (isOwner || isJoined)}}">
+        <image class="d-cover" src="{{game.coverUrl || game.coverFileID}}" mode="widthFix" />
+        <view class="cover-note">🔒 预约凭证仅发起人与已报名球友可见，不对外展示</view>
+      </block>
+      <view wx:elif="{{game.coverFileID}}" class="cover-locked">🔒 该场次已通过预约凭证核验</view>
+
+      <view class="d-info-row">
+        <view class="d-info">
+          <text class="di-label">时间</text>
+          <text class="di-val">{{game.dateLabel}} {{game.startTime}}-{{game.endTime}}</text>
+        </view>
+        <view class="d-info">
+          <text class="di-label">发起人</text>
+          <view class="di-user">
+            <view class="mini-avatar" style="background: {{game.pubColor}}">
+              <image wx:if="{{game.pubAvatar}}" class="mini-avatar-img" src="{{game.pubAvatar}}" mode="aspectFill" />
+              <text wx:else>{{game.pubChar}}</text>
+            </view>
+            <text class="di-val">{{game.publisherName}}</text>
+          </view>
+        </view>
+        <view class="d-info" wx:if="{{game.location}}">
+          <text class="di-label">位置</text>
+          <text class="di-val">📍 {{game.location}}</text>
+        </view>
+        <view class="d-info" wx:if="{{game.note}}">
+          <text class="di-label">备注</text>
+          <text class="di-val">{{game.note}}</text>
+        </view>
+        <view class="d-info d-level-info" wx:if="{{game.levelShort}}">
+          <text class="di-label">等级建议</text>
+          <text class="di-val">🏸 {{game.levelText}}</text>
+        </view>
+      </view>
+
+      <view class="d-prog">
+        <view class="prog-track"><view class="prog-bar" style="width: {{game.percent}}%"></view></view>
+        <view class="prog-txt">
+          已占 <text class="strong">{{game.filled}}</text>/{{game.total}} 人
+          · 剩余 <text class="strong">{{game.remaining}}</text> 个名额
+        </view>
+      </view>
+
+      <!-- 开启球场 + 场地核销：合并为一个操作，开场前 15 分钟起可操作、开场 10 分钟后失效 -->
+      <view wx:if="{{courtState !== 'hidden'}}" class="court-bar {{courtState}}">
+        <view class="court-main">
+          <view class="court-title">
+            <text class="court-name">开启球场 · 场地核销</text>
+            <text wx:if="{{courtTag}}" class="court-tag {{courtState === 'done' && game.verified ? 'ok' : ''}}">{{courtTag}}</text>
+          </view>
+          <view class="court-tip">{{courtTip}}</view>
+          <view wx:if="{{courtCount}}" class="court-count">⏱ {{courtCount}}</view>
+          <view wx:if="{{game.verified && verifyRemark}}" class="verify-remark" catchtap="showVerifyInfo">📝 {{verifyRemark}}</view>
+        </view>
+        <view wx:if="{{courtBtn}}" class="court-btn {{acting === 'openCourt' ? 'loading' : ''}}" bindtap="openCourt">
+          {{acting === 'openCourt' ? '处理中…' : courtBtn}}
+        </view>
+      </view>
+
+      <!-- 开场提醒：发起人可设置多个提醒；参与者可订阅，也能自定义自己的提醒时间 -->
+
+      <!-- 本场球友：所有人可见（含等级） -->
+      <view class="players-sec" bindtap="openSheet">
+        <view class="players-head">
+          <view class="players-title">本场球友 · {{players.length}} 人</view>
+          <view class="players-more">{{playersMore > 0 ? '查看全部' : '查看等级'}} ›</view>
+        </view>
+        <view wx:if="{{players.length}}" class="players-grid">
+          <view class="player" wx:for="{{playersTop}}" wx:key="no">
+            <view class="player-avatar" style="background: {{item.color}}">
+              <image wx:if="{{item.avatar}}" class="player-avatar-img" src="{{item.avatar}}" mode="aspectFill" />
+              <text wx:else>{{item.char}}</text>
+            </view>
+            <view class="player-name ellipsis">{{item.name}}</view>
+            <view wx:if="{{item.levelShort}}" class="player-level" style="color: {{item.levelColor}}; background: {{item.levelColor}}1a;">{{item.levelShort}}</view>
+            <view wx:else class="player-level none">未定级</view>
+          </view>
+          <view wx:if="{{playersMore > 0}}" class="player more">+{{playersMore}}</view>
+        </view>
+        <view wx:else class="players-empty">还没有球友报名，抢个头位？</view>
+      </view>
+
+      <!-- 参与者：分享给球友 / 生成海报拉人 -->
+      <view wx:if="{{!isOwner && !game.canceled && game.phase !== 'ended'}}" class="invite-row">
+        <button class="invite-btn" open-type="share" hover-class="none">{{game.remaining > 0 ? '邀请球友报名（剩 ' + game.remaining + ' 个名额）' : '邀请球友报名'}}</button>
+        <view class="invite-btn ghost" bindtap="openPoster">🖼 海报</view>
+      </view>
+    </view>
+
+    <!-- 发起人：调整人数 -->
+    <view wx:if="{{isOwner && !game.canceled}}" class="adj-card card">
+      <view class="sec-title">调整总人数</view>
+      <view class="adj-row">
+        <view class="step-btn {{adjusting || game.total <= occupied ? 'dis' : ''}}" data-delta="-1" bindtap="changeTotal">−</view>
+        <view class="adj-val">{{game.total}}</view>
+        <view class="step-btn {{adjusting ? 'dis' : ''}}" data-delta="1" bindtap="changeTotal">＋</view>
+      </view>
+      <view class="adj-tip">
+        总人数不能低于已占用 <text class="hl">{{occupied}}</text> 人（自留 {{game.reserve}} + 已报名 {{game.joined}}）
+      </view>
+      <view class="adj-actions">
+        <button class="adj-btn share" open-type="share" hover-class="none">📣 邀请球友</button>
+        <view class="adj-btn" bindtap="openPoster">{{posterLoading ? '生成中…' : '🖼 生成海报'}}</view>
+        <view class="adj-btn" bindtap="openSheet">👥 查看报名（{{game.joined}}）</view>
+        <view class="adj-btn" bindtap="onEdit">✏️ 编辑</view>
+        <view class="adj-btn danger" bindtap="onCancelGame">{{acting === 'cancelGame' ? '取消中…' : '取消拼场'}}</view>
+        <view class="adj-btn danger" bindtap="onDeleteGame">{{acting === 'deleteGame' ? '删除中…' : '删除拼场'}}</view>
+      </view>
+    </view>
+
+    <!-- 发起人：已取消提示 -->
+    <view wx:elif="{{isOwner && game.canceled}}" class="adj-card card">
+      <view class="cancel-tip">🚫 该拼场已取消，无法再调整人数。</view>
+    </view>
+
+    <!-- 底部操作 -->
+    <view class="foot-bar">
+      <block wx:if="{{isOwner}}">
+        <view class="foot-btn dis">你是这场拼场的发起人</view>
+      </block>
+      <block wx:elif="{{game.canceled}}">
+        <view class="foot-btn dis">该拼场已取消</view>
+      </block>
+      <block wx:elif="{{game.phase === 'ended'}}">
+        <view class="foot-btn dis">已结束</view>
+      </block>
+      <block wx:elif="{{isJoined}}">
+        <view wx:if="{{cancelTip}}" class="foot-tip">{{cancelTip}}</view>
+        <view wx:if="{{cancelState === 'open'}}" class="foot-btn cancel" bindtap="onCancelJoin">{{acting === 'cancelJoin' ? '处理中…' : '取消报名'}}</view>
+        <view wx:else class="foot-btn dis">暂不可取消报名</view>
+      </block>
+      <block wx:elif="{{game.canJoin}}">
+        <view class="foot-btn primary" bindtap="onJoin">{{joinLoading ? '抢位中…' : '立即报名'}}</view>
+      </block>
+      <block wx:else>
+        <view class="foot-btn dis">已拼满</view>
+      </block>
+    </view>
+  </block>
+
+  <view wx:else class="empty">
+    <view class="empty-icon">🏟️</view>
+    <view class="empty-title">{{loadError || '拼场不存在或已被删除'}}</view>
+    <view class="empty-sub">可以稍后重试，或回到大厅看看其它场次</view>
+    <view class="empty-btn" bindtap="load">↻ 重试</view>
+    <view class="empty-btn ghost" bindtap="goHall">回到大厅</view>
+  </view>
+
+  <!-- 报名名单弹层 -->
+  <view class="mask {{showSheet ? 'show' : ''}}" bindtap="closeSheet"></view>
+  <view class="sheet {{showSheet ? 'show' : ''}}">
+    <view class="sheet-bar"></view>
+    <view class="sheet-title">本场球友 · {{players.length}} 人<text class="sheet-close" bindtap="closeSheet">✕</text></view>
+    <view class="sheet-sub">等级为中羽等级，报名时快照</view>
+    <scroll-view scroll-y class="sheet-body">
+      <view class="enroll-item" wx:for="{{players}}" wx:key="no">
+        <view class="enroll-no">{{item.no}}</view>
+        <view class="enroll-avatar" style="background: {{item.color}}">
+          <image wx:if="{{item.avatar}}" class="enroll-avatar-img" src="{{item.avatar}}" mode="aspectFill" />
+          <text wx:else>{{item.char}}</text>
+        </view>
+        <view class="enroll-name ellipsis">
+          {{item.name}}
+          <text wx:if="{{item.tag}}" class="enroll-tag">{{item.tag}}</text>
+        </view>
+        <view wx:if="{{item.levelShort}}" class="enroll-level" style="color: {{item.levelColor}}; background: {{item.levelColor}}1a;">{{item.levelShort}}</view>
+        <view wx:else class="enroll-level none">未定级</view>
+      </view>
+    </scroll-view>
+  </view>
+
+  <!-- 拼场海报（长按可保存 / 发送给朋友） -->
+  <view class="poster-mask {{poster.show ? 'show' : ''}}" bindtap="closePoster"></view>
+  <view class="poster-box {{poster.show ? 'show' : ''}}">
+    <view class="poster-head">拼场海报<text class="poster-x" bindtap="closePoster">✕</text></view>
+    <scroll-view scroll-y class="poster-body">
+      <image wx:if="{{poster.path}}" class="poster-img" src="{{poster.path}}" mode="widthFix" show-menu-by-longpress="{{true}}" />
+      <view wx:else class="poster-ph">海报生成中…</view>
+    </scroll-view>
+    <view class="poster-tip">保存到相册，可在线下邀约球友时出示</view>
+    <view class="poster-acts">
+      <view class="poster-btn" bindtap="savePoster">保存到相册</view>
+      <view class="poster-btn ghost" bindtap="closePoster">关闭</view>
+    </view>
+  </view>
+  <canvas type="2d" id="posterCanvas" class="poster-canvas"></canvas>
+
+  <!-- 开场提醒设置弹层（参与者可自定义自己的提醒时间） -->
+  <view class="mask {{remindSheet ? 'show' : ''}}" bindtap="closeRemindSheet"></view>
+  <view class="sheet remind-sheet {{remindSheet ? 'show' : ''}}">
+    <view class="sheet-bar"></view>
+    <view class="sheet-title">设置开场提醒<text class="sheet-close" bindtap="closeRemindSheet">✕</text></view>
+
+    <view class="remind-sec">
+      <view class="remind-sec-t">沿用发起人的提醒（可取消勾选）</view>
+      <view class="remind-picks">
+        <view
+          wx:for="{{reminderPresetList}}"
+          wx:key="key"
+          class="rp-chip {{item.on ? 'on' : ''}}"
+          data-index="{{index}}"
+          bindtap="toggleRemindKey"
+        >{{item.label}}</view>
+      </view>
+    </view>
+
+    <view wx:if="{{remindCustom.length}}" class="remind-sec">
+      <view class="remind-sec-t">我的自定义提醒</view>
+      <view class="remind-picks">
+        <view
+          wx:for="{{remindCustom}}"
+          wx:key="*this"
+          class="rp-chip cus"
+          data-min="{{item}}"
+          bindtap="removeCustomRemind"
+        >🔔 开场前 {{item}} 分钟 ✕</view>
+      </view>
+    </view>
+
+    <view class="remind-add">
+      <text class="ra-label">自定义提前分钟</text>
+      <input class="ra-input" type="number" value="{{customMin}}" bindinput="onCustomMin" placeholder="如 45" />
+      <view class="ra-add" bindtap="addCustomRemind">+ 添加</view>
+    </view>
+
+    <view class="remind-sheet-tip">到点会推送订阅消息（需授权）。已过去的提醒会自动跳过。</view>
+    <view class="remind-sheet-tip sub">⚠️ 一次性订阅每次授权只能收 1 条：若设了多条提醒，请在授权弹窗勾选「总是保持以上选择」，否则只收到第 1 条。</view>
+    <view class="remind-confirm {{subscribing ? 'loading' : ''}}" bindtap="confirmRemind">
+      {{subscribing ? '提交中…' : '保存并订阅提醒'}}
+    </view>
+  </view>
+
+  <login-modal show="{{showLogin}}" tip="微信登录后即可报名抢位" bind:success="handleLoginSuccess" bind:cancel="handleLoginCancel" />
+
+  <level-modal show="{{showLevel}}" bind:confirm="handleLevelConfirm" bind:cancel="handleLevelCancel" />
+</view>

@@ -1,0 +1,36 @@
+<view class="lvm-mask {{show ? 'show' : ''}}" catchtouchmove="noop">
+  <view class="lvm-card" catchtap="noop">
+    <view class="lvm-grip"></view>
+    <view class="lvm-title">🏸 设置我的羽毛球等级</view>
+    <view class="lvm-sub">参照「中羽等级」选择符合自己水平的等级（数字越大水平越高），发布或参与拼场前需先完成设置。</view>
+
+    <scroll-view class="lvm-chips" scroll-x enhanced show-scrollbar="{{false}}">
+      <view class="lvm-chip-row">
+        <view
+          wx:for="{{levels}}"
+          wx:key="level"
+          class="lvm-chip {{selected === item.level ? 'on' : ''}}"
+          style="{{selected === item.level ? 'background:' + item.color : ''}}"
+          data-level="{{item.level}}"
+          bindtap="onSelect"
+        >{{item.level === 9 ? '9级+' : item.level + '级'}}</view>
+      </view>
+    </scroll-view>
+
+    <view class="lvm-detail" style="border-left-color: {{cur.color}};">
+      <view class="lvm-dname">
+        <text class="lvm-dn">{{cur.name}}</text>
+        <text class="lvm-dlv">中羽 {{cur.level === 9 ? '9+' : cur.level}} 级</text>
+      </view>
+      <view class="lvm-drow">技术特点：{{cur.desc}}</view>
+      <view class="lvm-drow">适合人群：{{cur.suit}}</view>
+    </view>
+
+    <view class="lvm-link" bindtap="openImage">🖼️ 查看中羽等级科普大图（含 1-9 级详细说明）</view>
+
+    <view class="lvm-btn" bindtap="onConfirm">确认我的等级</view>
+    <view class="lvm-cancel" bindtap="onCancel">暂不设置</view>
+  </view>
+
+  <level-viewer show="{{showViewer}}" bind:close="closeImage" />
+</view>

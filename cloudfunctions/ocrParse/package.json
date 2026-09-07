@@ -1,0 +1,9 @@
+{
+  "name": "ocrParse",
+  "version": "1.0.0",
+  "description": "Court Buddy 预约截图 OCR 识别与结构化解析",
+  "main": "index.js",
+  "dependencies": {
+    "wx-server-sdk": "~2.6.3"
+  }
+}

@@ -1,0 +1,41 @@
+# ==================== 密钥与敏感配置（切勿提交）====================
+# OCR 密钥（百度/腾讯云/ocr.space API Key）
+cloudfunctions/ocrParse/keys.js
+# 其他本地密钥/环境变量文件
+*.key
+.env
+.env.*
+
+# ==================== 微信开发者工具 ====================
+# 个人私有配置（每人不同，官方建议不提交）
+project.private.config.json
+
+# ==================== 云开发 / 工具本地数据 ====================
+.cloudbase/
+.codebuddy/
+.tea/
+
+# ==================== Node.js ====================
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# ==================== 系统文件 ====================
+# Windows
+[Dd]esktop.ini
+Thumbs.db
+$RECYCLE.BIN/
+# macOS
+.DS_Store
+.fseventsd
+.Spotlight-V100
+.TemporaryItems
+.Trashes
+
+# ==================== IDE / 编辑器 ====================
+.idea/
+.vscode/*
+!.vscode/extensions.json
+*.swp

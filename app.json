@@ -1,0 +1,30 @@
+{
+  "pages": [
+    "pages/index/index",
+    "pages/history/history",
+    "pages/publish/publish",
+    "pages/mine/mine",
+    "pages/detail/detail"
+  ],
+  "window": {
+    "navigationBarTextStyle": "black",
+    "navigationBarBackgroundColor": "#ffffff",
+    "navigationBarTitleText": "Court Buddy",
+    "backgroundColor": "#f2f6fc"
+  },
+  "tabBar": {
+    "custom": true,
+    "color": "#9aa3b5",
+    "selectedColor": "#2f6bff",
+    "backgroundColor": "#ffffff",
+    "list": [
+      { "pagePath": "pages/index/index", "text": "大厅" },
+      { "pagePath": "pages/history/history", "text": "历史" },
+      { "pagePath": "pages/publish/publish", "text": "发场" },
+      { "pagePath": "pages/mine/mine", "text": "我的" }
+    ]
+  },
+  "style": "v2",
+  "sitemapLocation": "sitemap.json",
+  "lazyCodeLoading": "requiredComponents"
+}

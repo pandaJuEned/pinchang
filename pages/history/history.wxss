@@ -1,0 +1,227 @@
+.page {
+  padding-top: 20rpx;
+}
+
+/* ---------- 头部 ---------- */
+.his-head {
+  padding: 10rpx 8rpx 26rpx;
+}
+.head-title {
+  font-size: 46rpx;
+  font-weight: 800;
+  letter-spacing: 1rpx;
+  background: linear-gradient(120deg, #1d4ed8, #2f6bff 55%, #0fd083);
+  -webkit-background-clip: text;
+  color: transparent;
+}
+.head-sub {
+  font-size: 24rpx;
+  color: #7b8799;
+  margin-top: 8rpx;
+}
+
+/* ---------- 统计条 ---------- */
+.stat-band {
+  display: flex;
+  align-items: center;
+  padding: 30rpx 10rpx;
+  margin-bottom: 24rpx;
+}
+.stat {
+  flex: 1;
+  text-align: center;
+}
+.stat-num {
+  font-size: 48rpx;
+  font-weight: 800;
+  color: #16233c;
+  line-height: 1.15;
+  font-family: 'DIN Alternate', 'Helvetica Neue', sans-serif;
+}
+.stat-num.blue {
+  color: #2f6bff;
+}
+.stat-num.green {
+  color: #06a86b;
+}
+.stat-lab {
+  font-size: 22rpx;
+  color: #7b8799;
+  margin-top: 6rpx;
+}
+.stat-div {
+  width: 2rpx;
+  height: 56rpx;
+  background: #edf1f8;
+  flex: none;
+}
+
+/* ---------- 角色筛选 ---------- */
+.seg-bar {
+  display: flex;
+  padding: 10rpx;
+  margin-bottom: 20rpx;
+}
+.seg {
+  flex: 1;
+  text-align: center;
+  font-size: 26rpx;
+  color: #5b6678;
+  padding: 16rpx 0;
+  border-radius: 20rpx;
+  transition: all 0.18s ease;
+}
+.seg.on {
+  background: linear-gradient(135deg, #4d86ff, #2f6bff);
+  color: #fff;
+  font-weight: 600;
+  box-shadow: 0 8rpx 18rpx rgba(47, 107, 255, 0.3);
+}
+
+/* ---------- 状态筛选 ---------- */
+.chip-row {
+  display: flex;
+  gap: 14rpx;
+  margin: 0 4rpx 22rpx;
+  flex-wrap: wrap;
+}
+.chip {
+  font-size: 24rpx;
+  color: #5b6678;
+  background: #fff;
+  border: 2rpx solid #e7ecf6;
+  border-radius: 30rpx;
+  padding: 8rpx 24rpx;
+  transition: all 0.18s ease;
+}
+.chip.on {
+  color: #2f6bff;
+  border-color: rgba(47, 107, 255, 0.45);
+  background: rgba(47, 107, 255, 0.08);
+  font-weight: 600;
+}
+
+/* ---------- 列表卡片 ---------- */
+.his-card {
+  padding: 26rpx 28rpx;
+  margin-bottom: 22rpx;
+}
+.his-top {
+  display: flex;
+  align-items: center;
+}
+.his-avatar {
+  width: 84rpx;
+  height: 84rpx;
+  border-radius: 26rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 46rpx;
+  flex: none;
+  margin-right: 20rpx;
+}
+.his-info {
+  flex: 1;
+  min-width: 0;
+}
+.his-venue {
+  font-size: 30rpx;
+  font-weight: 700;
+  color: #16233c;
+}
+.his-time {
+  font-size: 24rpx;
+  color: #7b8799;
+  margin-top: 6rpx;
+}
+.his-status {
+  flex: none;
+  margin-left: 14rpx;
+  font-size: 22rpx;
+  padding: 6rpx 16rpx;
+  border-radius: 24rpx;
+  font-weight: 600;
+}
+.his-status.open {
+  background: rgba(15, 208, 131, 0.12);
+  color: #06a86b;
+}
+.his-status.full {
+  background: #f0f2f7;
+  color: #98a2b3;
+}
+.his-status.ongoing {
+  background: rgba(47, 107, 255, 0.12);
+  color: #2f6bff;
+}
+.his-status.ending {
+  background: rgba(255, 77, 90, 0.13);
+  color: #ff4d5a;
+}
+.his-status.ended {
+  background: #f0f2f7;
+  color: #98a2b3;
+}
+.his-status.cancel {
+  background: #f1f4f9;
+  color: #a8b1c0;
+}
+
+/* ---------- 卡片底部 ---------- */
+.his-foot {
+  display: flex;
+  align-items: center;
+  margin-top: 22rpx;
+}
+.role-tag {
+  flex: none;
+  font-size: 20rpx;
+  border-radius: 18rpx;
+  padding: 4rpx 14rpx;
+  margin-right: 18rpx;
+}
+.role-tag.pub {
+  color: #06a86b;
+  background: rgba(15, 208, 131, 0.12);
+}
+.role-tag.join {
+  color: #2f6bff;
+  background: rgba(47, 107, 255, 0.1);
+}
+.his-prog-track {
+  flex: 1;
+  height: 12rpx;
+  background: #e4eaf5;
+  border-radius: 8rpx;
+  overflow: hidden;
+}
+.his-prog-bar {
+  height: 100%;
+  border-radius: 8rpx;
+  background: linear-gradient(90deg, #4d86ff, #0fd083);
+  transition: width 0.5s cubic-bezier(0.2, 0.8, 0.3, 1);
+}
+.his-prog-txt {
+  flex: none;
+  margin-left: 16rpx;
+  font-size: 22rpx;
+  color: #7b8799;
+}
+.his-arrow {
+  flex: none;
+  margin-left: 14rpx;
+  font-size: 34rpx;
+  color: #c3cad9;
+  line-height: 1;
+}
+
+/* ---------- 骨架 ---------- */
+.his-sk {
+  height: 200rpx;
+  margin-bottom: 22rpx;
+}
+
+.safe-pad {
+  height: 30rpx;
+}
