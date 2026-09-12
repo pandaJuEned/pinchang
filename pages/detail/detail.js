@@ -507,7 +507,7 @@ Page({
       })
     }
     const isParticipant = !!(this.data.isOwner || this.data.isJoined)
-    const win = reminder.checkinWindow(g.date, g.startTime, now)
+    const win = reminder.checkinWindow(g.date, g.startTime, now, g.endTime)
     let state = 'waiting'
     let tag = '待开启'
     let tip = ''
@@ -530,11 +530,11 @@ Page({
       count = `${reminder.fmtDuration(win.openAt - now)}后可操作`
     } else if (win.state === 'open') {
       state = isParticipant ? 'todo' : 'waiting'
-      tip = isParticipant ? '到场后点右侧按钮，开启球场并登记核销' : '等待参与者开启球场'
-      count = isParticipant ? `${reminder.fmtDuration(win.expireAt - now)}后核销失效` : ''
+      tip = isParticipant ? '到场后点右侧按钮，开启球场并登记核销（场次结束前均可核销）' : '等待参与者开启球场'
+      count = isParticipant ? `距场次结束还可核销 ${reminder.fmtDuration(win.expireAt - now)}` : ''
     } else {
       state = isParticipant ? 'expired' : 'waiting'
-      tip = isParticipant ? `核销已失效（开场 ${reminder.CHECKIN_AFTER_MIN} 分钟后不可核销），仍可开启球场` : '等待参与者开启球场'
+      tip = isParticipant ? '核销已失效（本场时间已结束），仍可开启球场' : '等待参与者开启球场'
     }
 
     // 取消报名窗口：开场前 CANCEL_JOIN_BEFORE_MIN 分钟起锁定名额（每秒随倒计时刷新）
@@ -564,7 +564,7 @@ Page({
     wx.showModal({
       title: onlyOpen ? '开启球场' : '开启球场并登记核销',
       content: onlyOpen
-        ? '核销已超过开场 10 分钟，本次只开启球场，不再登记核销。'
+        ? '本场时间已结束，本次只开启球场，不再登记核销。'
         : '确认开启球场并登记核销？\n开启后状态变为「进行中」，场地核销整场只登记一次，不可撤销。',
       editable: true,
       placeholderText: '核销备注（选填，如到场情况）',

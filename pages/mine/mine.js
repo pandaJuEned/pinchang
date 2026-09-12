@@ -130,7 +130,9 @@ Page({
         statusClass: util.phaseClass(g.phase),
         canceled: g.status === 'canceled',
         finished: util.daysFromToday(g.date) < 0 || g.phase === 'ended',
-        canVerifyCourt: g.status !== 'canceled' && g.phase !== 'ended'
+        // 核销窗口：开场前 15 分钟起 ~ 场次结束时间内才可点「核销」
+        canVerifyCourt: g.status !== 'canceled' && g.phase !== 'ended' &&
+          reminder.checkinWindow(g.date, g.startTime, Date.now(), g.endTime).state === 'open'
       }
     })
   },
@@ -156,7 +158,9 @@ Page({
         cancelLocked: reminder.cancelJoinWindow(g.date, g.startTime).state === 'locked',
         joinTime: this.formatDateTime(g.joinedAt),
         canOpenCourt: g.status !== 'canceled' && g.status !== 'ongoing' && g.phase !== 'ended',
-        canVerifyCourt: g.status !== 'canceled' && g.phase !== 'ended'
+        // 核销窗口：开场前 15 分钟起 ~ 场次结束时间内才可点「核销」
+        canVerifyCourt: g.status !== 'canceled' && g.phase !== 'ended' &&
+          reminder.checkinWindow(g.date, g.startTime, Date.now(), g.endTime).state === 'open'
       }
     })
   },
@@ -399,6 +403,16 @@ Page({
       } else {
         wx.showToast({ title: '场地已核销', icon: 'none' })
       }
+      return
+    }
+    // 核销时间窗：开场前 15 分钟起 ~ 场次结束时间可核销（与详情页/云函数校验一致）
+    const win = reminder.checkinWindow(item.date, item.startTime, Date.now(), item.endTime)
+    if (win.state === 'early') {
+      wx.showToast({ title: `开场前 ${reminder.CHECKIN_BEFORE_MIN} 分钟起可核销场地`, icon: 'none' })
+      return
+    }
+    if (win.state === 'expired') {
+      wx.showToast({ title: '本场时间已结束，无法核销', icon: 'none' })
       return
     }
     wx.showModal({

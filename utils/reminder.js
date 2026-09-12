@@ -6,14 +6,13 @@ const {
   soonTemplateId,       // ② 活动即将开始通知
   startTemplateId,      // ③ 活动开始通知
   checkinBeforeMin,     // 开场前多少分钟起可「开启球场并核销」
-  checkinAfterMin,      // 开场后多少分钟核销失效
   openRemindAfterMin,   // 开场后多少分钟无人开启 → 向全体推送提醒
   cancelJoinBeforeMin   // 开场前多少分钟内不可取消报名（锁定期）
 } = require('./config')
 
-// 「开启球场 + 登记核销」时间窗（分钟），缺省值保证配置缺失时也有合理行为
+// 「开启球场 + 登记核销」时间窗，缺省值保证配置缺失时也有合理行为：
+// 开场前 CHECKIN_BEFORE_MIN 分钟起可操作，直到场次结束时间（endTime）都可核销
 const CHECKIN_BEFORE_MIN = Number(checkinBeforeMin) || 15
-const CHECKIN_AFTER_MIN = Number(checkinAfterMin) || 10
 const OPEN_REMIND_AFTER_MIN = Number(openRemindAfterMin) || 5
 // 取消报名锁定期（分钟）：开场前这么多分钟起不可再取消报名
 const CANCEL_JOIN_BEFORE_MIN = Number(cancelJoinBeforeMin) || 15
@@ -52,11 +51,13 @@ function defaultKeys() {
 // 「开启球场 + 登记核销」的时间窗
 // 返回 { state, startAt, openAt, expireAt, remindAt }
 //   state: 'early' 还没到可操作时间 | 'open' 可操作 | 'expired' 核销已失效
-function checkinWindow(dateStr, startTime, now) {
+// 核销有效期：开场前 CHECKIN_BEFORE_MIN 分钟起，直到「场次结束时间」都可核销
+// （支持打到一半出去核销）；endTime 缺失时兜底为开场时刻。
+function checkinWindow(dateStr, startTime, now, endTime) {
   const startAt = startTs(dateStr, startTime)
   const t = Number(now) || Date.now()
   const openAt = startAt ? startAt - CHECKIN_BEFORE_MIN * 60000 : 0
-  const expireAt = startAt ? startAt + CHECKIN_AFTER_MIN * 60000 : 0
+  const expireAt = startTs(dateStr, endTime) || startAt
   let state = 'open'
   if (startAt) {
     if (t < openAt) state = 'early'
@@ -255,7 +256,6 @@ module.exports = {
   requestAllSubscribe,
   // 「开启球场 + 核销」时间窗常量（详情页提示文案使用，缺失会显示 undefined）
   CHECKIN_BEFORE_MIN,
-  CHECKIN_AFTER_MIN,
   OPEN_REMIND_AFTER_MIN,
   // 取消报名锁定期常量（详情页 / 我的页提示文案使用）
   CANCEL_JOIN_BEFORE_MIN,

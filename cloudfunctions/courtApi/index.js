@@ -57,10 +57,10 @@ const SOON_TEMPLATE_ID = 'Zaw4DdByL0g_jEJ0U11kuI-LamcWIm-zcV5xXs7pfN4'
 // 留空 '' 时开启球场不推送（开场时刻的定时提醒仍由 remindTick 负责）。
 const START_TEMPLATE_ID = 'EjdpIf9omE1ns1Bi3iOqHcgh4BBdJQEF9pV9-X0wmKQ'
 
-// 「开启球场 + 登记核销」时间窗（分钟）：与 utils/config.js 保持一致。
-// 开场前 CHECKIN_BEFORE_MIN 分钟起可操作；开场后 CHECKIN_AFTER_MIN 分钟核销失效。
+// 「开启球场 + 登记核销」时间窗：与 utils/config.js 保持一致。
+// 开场前 CHECKIN_BEFORE_MIN 分钟起可操作；核销一直有效到「场次结束时间」（endTime），
+// 即整个时间段（含打到一半出去核销）都可核销，结束时间之后核销失效。
 const CHECKIN_BEFORE_MIN = 15
-const CHECKIN_AFTER_MIN = 10
 // 取消报名锁定期（分钟）：开场前这么多分钟起锁定名额、不可再取消，
 // 与 utils/config.js 的 cancelJoinBeforeMin 保持一致。
 const CANCEL_BEFORE_MIN = 15
@@ -752,6 +752,12 @@ async function doHall(event) {
   if (list === null) list = []
   // 兜底过滤：剩余名额（total - reserve - joined）≤ 0 的场次不下发（含进行中但已满的场次）
   list = list.filter((g) => (g.total || 0) - (g.reserve || 0) - (g.joined || 0) > 0)
+  // 兜底过滤：已过结束时间的场次不下发 —— status 可能仍停留在 ongoing（等 remindTick 翻转），
+  // 查询条件只按状态/日期，这里按 endTime 再兜一道，避免深夜大厅还挂着白天的「进行中」场次
+  list = list.filter((g) => {
+    const gEndTs = beijingTs(g.date, g.endTime)
+    return !gEndTs || Date.now() < gEndTs
+  })
 
   // 我报名过的场次集合
   const joinedSet = {}
@@ -934,8 +940,9 @@ async function doSetVerify(event) {
   }
   if (!authorized) return fail(403, '只有参与本场拼场的人才能核销')
 
-  // 时间窗：开场前 CHECKIN_BEFORE_MIN 分钟起才可核销，开场后 CHECKIN_AFTER_MIN 分钟失效
+  // 时间窗：开场前 CHECKIN_BEFORE_MIN 分钟起才可核销，直到场次结束时间（endTime）都可核销
   const startTs = beijingTs(game.date, game.startTime)
+  const endTs = beijingTs(game.date, game.endTime)
   const now = Date.now()
   if (game.status === 'ongoing' && game.verified) {
     return fail(409, '场地已核销，无需重复操作')
@@ -943,8 +950,8 @@ async function doSetVerify(event) {
   if (startTs && now < startTs - CHECKIN_BEFORE_MIN * 60000) {
     return fail(409, `开场前 ${CHECKIN_BEFORE_MIN} 分钟（${game.startTime} 前）才能核销场地`)
   }
-  if (startTs && now > startTs + CHECKIN_AFTER_MIN * 60000) {
-    return fail(409, `开场已超 ${CHECKIN_AFTER_MIN} 分钟，场地核销已失效`)
+  if (endTs && now > endTs) {
+    return fail(409, `本场时间段（${game.startTime}-${game.endTime}）已结束，无法核销`)
   }
 
   const data = { verified: true }
@@ -963,8 +970,8 @@ async function doSetVerify(event) {
 
 /* ===================== 开启球场 + 登记核销（合并为一个操作，任一参与者均可） ===================== */
 // 到场后点一次即「开启球场并登记核销」：状态→进行中，并在时间窗内把场地核销标记置为 true。
-// 时间窗：开场前 CHECKIN_BEFORE_MIN 分钟起可操作；开场后 CHECKIN_AFTER_MIN 分钟核销失效，
-// 失效后仍可开启球场，但不再登记核销（避免错过开场的人永远无法关单）。
+// 时间窗：开场前 CHECKIN_BEFORE_MIN 分钟起可操作；核销一直有效到「场次结束时间」（endTime），
+// 结束后仍可开启球场，但不再登记核销（避免错过核销的人永远无法关单）。
 async function doOpenCourt(event) {
   const openid = getOpenid()
   if (!openid) return fail(403, '无法获取用户身份，请重新进入小程序')
@@ -1000,12 +1007,13 @@ async function doOpenCourt(event) {
 
   // 时间窗：开场前 CHECKIN_BEFORE_MIN 分钟起才能「开启球场并登记核销」
   const startTs = beijingTs(game.date, game.startTime)
+  const endTs = beijingTs(game.date, game.endTime)
   const now = Date.now()
   if (startTs && now < startTs - CHECKIN_BEFORE_MIN * 60000) {
     return fail(409, `开场前 ${CHECKIN_BEFORE_MIN} 分钟（${game.startTime} 前）才能开启球场并登记核销`)
   }
-  // 是否仍在核销窗口内（开场后 CHECKIN_AFTER_MIN 分钟以内）
-  const inWindow = !!startTs && now >= startTs - CHECKIN_BEFORE_MIN * 60000 && now <= startTs + CHECKIN_AFTER_MIN * 60000
+  // 是否仍在核销窗口内（直到场次结束时间都可核销）
+  const inWindow = !!startTs && now >= startTs - CHECKIN_BEFORE_MIN * 60000 && (!endTs || now <= endTs)
 
   // 合并：开启球场（状态→进行中）+ 时间窗内登记核销
   const data = { status: 'ongoing' }
@@ -1025,7 +1033,7 @@ async function doOpenCourt(event) {
   } else if (game.verified) {
     verified = true
   } else {
-    // 已过核销窗口：仅开启球场，不再登记核销
+    // 已过核销窗口（场次已结束）：仅开启球场，不再登记核销
     data.verifyExpired = true
   }
   await db.collection('games').doc(gameId).update({ data })
@@ -1341,12 +1349,14 @@ function beijingTs(dateStr, timeStr) {
 function computePhase(g, remaining) {
   if (g.status === 'canceled') return 'canceled'
   if (g.status === 'ended') return 'ended' // 到点自动结束（remindTick 定时任务置为 ended）
-  if (g.status === 'ongoing') return 'ongoing' // 手动开启球场
   const startTs = beijingTs(g.date, g.startTime)
   const endTs = beijingTs(g.date, g.endTime)
-  if (!startTs || !endTs) return remaining > 0 ? 'upcoming' : 'full'
   const now = Date.now()
-  if (now >= endTs) return 'ended'
+  // 已过结束时间一律按「已结束」：status 可能仍停留在 ongoing（开启球场后 remindTick
+  // 未及翻转 / 定时任务未运行），此时大厅/我的/详情也不能再显示「正在进行」
+  if (endTs && now >= endTs) return 'ended'
+  if (g.status === 'ongoing') return 'ongoing' // 手动开启球场
+  if (!startTs || !endTs) return remaining > 0 ? 'upcoming' : 'full'
   if (now >= startTs) return endTs - now <= 20 * 60 * 1000 ? 'ending' : 'ongoing'
   return remaining > 0 ? 'upcoming' : 'full'
 }
