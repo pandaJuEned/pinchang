@@ -105,10 +105,9 @@
         <view wx:else class="players-empty">还没有球友报名，抢个头位？</view>
       </view>
 
-      <!-- 参与者：分享给球友 / 生成海报拉人 -->
+      <!-- 参与者：分享到群聊快速报名 -->
       <view wx:if="{{!isOwner && !game.canceled && game.phase !== 'ended'}}" class="invite-row">
         <button class="invite-btn" open-type="share" hover-class="none">{{game.remaining > 0 ? '邀请球友报名（剩 ' + game.remaining + ' 个名额）' : '邀请球友报名'}}</button>
-        <view class="invite-btn ghost" bindtap="openPoster">🖼 海报</view>
       </view>
     </view>
 
@@ -125,7 +124,6 @@
       </view>
       <view class="adj-actions">
         <button class="adj-btn share" open-type="share" hover-class="none">📣 邀请球友</button>
-        <view class="adj-btn" bindtap="openPoster">{{posterLoading ? '生成中…' : '🖼 生成海报'}}</view>
         <view class="adj-btn" bindtap="openSheet">👥 查看报名（{{game.joined}}）</view>
         <view class="adj-btn" bindtap="onEdit">✏️ 编辑</view>
         <view class="adj-btn danger" bindtap="onCancelGame">{{acting === 'cancelGame' ? '取消中…' : '取消拼场'}}</view>
@@ -193,22 +191,6 @@
       </view>
     </scroll-view>
   </view>
-
-  <!-- 拼场海报（长按可保存 / 发送给朋友） -->
-  <view class="poster-mask {{poster.show ? 'show' : ''}}" bindtap="closePoster"></view>
-  <view class="poster-box {{poster.show ? 'show' : ''}}">
-    <view class="poster-head">拼场海报<text class="poster-x" bindtap="closePoster">✕</text></view>
-    <scroll-view scroll-y class="poster-body">
-      <image wx:if="{{poster.path}}" class="poster-img" src="{{poster.path}}" mode="widthFix" show-menu-by-longpress="{{true}}" />
-      <view wx:else class="poster-ph">海报生成中…</view>
-    </scroll-view>
-    <view class="poster-tip">保存到相册，可在线下邀约球友时出示</view>
-    <view class="poster-acts">
-      <view class="poster-btn" bindtap="savePoster">保存到相册</view>
-      <view class="poster-btn ghost" bindtap="closePoster">关闭</view>
-    </view>
-  </view>
-  <canvas type="2d" id="posterCanvas" class="poster-canvas"></canvas>
 
   <!-- 开场提醒设置弹层（参与者可自定义自己的提醒时间） -->
   <view class="mask {{remindSheet ? 'show' : ''}}" bindtap="closeRemindSheet"></view>

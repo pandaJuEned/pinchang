@@ -207,4 +207,7 @@
 
   <!-- 等级设置弹层 -->
   <level-modal show="{{showLevel}}" bind:confirm="handleLevelConfirm" bind:cancel="handleLevelCancel" />
+
+  <!-- 版本信息 -->
+  <view class="version-foot">Court Buddy · v{{version}}</view>
 </view>

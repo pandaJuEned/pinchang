@@ -15,6 +15,7 @@
     "useCompilerPlugins": false
   },
   "compileType": "miniprogram",
+  "description": "Court Buddy 球场拼场 v1.2.4",
   "simulatorPluginLibVersion": {},
   "packOptions": {
     "ignore": [],

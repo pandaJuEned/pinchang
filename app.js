@@ -4,6 +4,8 @@ const config = require('./utils/config')
 App({
   globalData: {
     envId: config.envId,
+    // 小程序版本号（提审时同步更新）
+    version: '1.2.4',
     loggedIn: false,
     user: { nick: '', level: 0, avatar: '', phone: '' }
   },

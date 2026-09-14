@@ -665,3 +665,11 @@
   0%, 100% { opacity: 1; }
   50% { opacity: .3; }
 }
+
+/* ---------- 版本信息 ---------- */
+.version-foot {
+  margin: 30rpx 0 10rpx;
+  text-align: center;
+  font-size: 22rpx;
+  color: #a3acbb;
+}

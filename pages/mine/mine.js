@@ -27,7 +27,8 @@ Page({
     showLogin: false,
     showLevel: false,
     avatarUrl: '',
-    phone: ''
+    phone: '',
+    version: app.globalData.version
   },
 
   onLoad() {
